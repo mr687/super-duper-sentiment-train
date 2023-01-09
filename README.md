@@ -32,16 +32,18 @@ code .
 ```
 
 ## Folder Structure
-├── dataset
-│   ├── raw
-│   │   ├── *.csv
+```
+├── dataset 
+│   ├── raw 
+│   │   ├── *.csv 
 │   ├── processed	
-│   │   ├── *.csv
-│   ├── wordlist
-│   │   ├── *.{csv,txt}
-├── notebooks
-│   ├── {incremental}-*.ipynb
-├── requirements.txt
+│   │   ├── *.csv 
+│   ├── wordlist 
+│   │   ├── *.{csv,txt} 
+├── notebooks 
+│   ├── {incremental}-*.ipynb 
+├── requirements.txt 
+```
 
 - Dataset
 
