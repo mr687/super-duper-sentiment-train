@@ -32,7 +32,7 @@ def tokenize(tweet):
 	return nltk.word_tokenize(tweet)
 
 def load_normalization_list():
-	normalization_list_path = '../dataset/wordlist/normalization_list.csv'
+	normalization_list_path = './dataset/wordlist/normalization_list.csv'
 	normalization_list = pd.read_csv(normalization_list_path, delimiter=',')
 	list_normalize_targets = list(normalization_list['target'])
 	list_normalize_replacements = list(normalization_list['replacement'])
