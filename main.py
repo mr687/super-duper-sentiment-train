@@ -6,6 +6,7 @@ import sklearn as sk
 import nltk
 
 nltk.download('punkt')
+nltk.download('stopwords')
 
 from shared import *
 
