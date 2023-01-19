@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import sklearn as sk
 import nltk
+import swifter
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -30,23 +31,59 @@ def get_prediction(tweet_text):
 	else:
 		return 'Positive'
 
-st.title("Sentiment Analysis of Tweets about Indonesia's Fuel Price Hike")
-
-st.header("Enter a Tweet below")
-
-tweet_text = st.text_area('Tweet Text')
-
-if st.button('Analyze'):
-	st.header("Sentiment Analysis Results")
-
-	text = preprocess_text(tweet_text)
-
-	result = get_prediction(text)
-
-	st.write(f"Tweet: {tweet_text}")
-	st.write(f"Preprocessed Tweet: {text}")
-
+def write_result_sentiment(st, result):
 	if result == 'Negative':
 		st.error(f"Sentiment: {result}")
 	else:
 		st.success(f"Sentiment: {result}")
+
+def write_result(st, text_ori, text_clean, result):
+	st.write(f"Tweet Original: `{text_ori}`")
+	st.write(f"Preprocessed Tweet: `{text_clean}`")
+	write_result_sentiment(st, result)
+
+st.title("Sentiment Analysis of Tweets about Indonesia's Fuel Price Hike")
+st.write("This is a simple sentiment analysis of tweets about Indonesia's fuel price hike developed by [Davi Nomoeh Dani](https://mr687.github.io). The model is trained using a SVM classifier.")
+
+with st.expander('Example Tweets', expanded=True):
+	samples = [
+		"pertamina naikin harga bensin lagi, kapan ya harga bensin naik lagi?",
+		"@pertamina emang gak ada yg bisa diandalkan, kalo gak ada yg bisa diandalkan, kenapa kita harus bayar pajak? #HargaPertaminaMakinMahal",
+	]
+	for i, sample in enumerate(samples):
+		text = preprocess_text(sample)
+		result = get_prediction(text)
+		write_result(st, sample, text, result)
+		if i < len(samples) - 1:
+			st.write('---')
+
+
+with st.expander('Manual Input'):
+	tweet_text = st.text_area('Tweet Text')
+	if tweet_text != '':
+		text = preprocess_text(tweet_text)
+		result = get_prediction(text)
+		write_result(st, tweet_text, text, result)
+		st.balloons()
+
+with st.expander('Upload File (CSV)'):
+	file = st.file_uploader('Upload File', type=['csv'])
+	if file is not None:
+		df = pd.read_csv(file, delimiter='`')
+
+		with st.spinner('Wait for it...'):
+			progress_bar = st.progress(0)
+			df['text_clean'] = df['text'].swifter.apply(preprocess_text)
+			progress_bar.progress(50)
+			df['sentiment'] = df['text_clean'].swifter.apply(get_prediction)
+			progress_bar.progress(100)
+			st.write(df[['text', 'sentiment']])
+		
+		st.balloons()
+
+		st.download_button(
+			label='Download Result',
+			data=df.to_csv(index=False).encode('utf-8'),
+			file_name=f'{file.name}-result.csv',
+			mime='text/csv'
+		)
