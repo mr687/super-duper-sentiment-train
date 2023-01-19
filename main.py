@@ -60,7 +60,7 @@ with st.expander('Example Tweets', expanded=True):
 
 with st.expander('Manual Input'):
 	tweet_text = st.text_area('Tweet Text')
-	if tweet_text != '':
+	if st.button('Analyze'):
 		text = preprocess_text(tweet_text)
 		result = get_prediction(text)
 		write_result(st, tweet_text, text, result)
