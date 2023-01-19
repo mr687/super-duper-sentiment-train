@@ -45,7 +45,7 @@ def normalize(tokens, targets, replacements):
 def load_stopwords_list():
 	indonesian_stopwords_list = nltk.corpus.stopwords.words('indonesian')
 	english_stopwords_list = nltk.corpus.stopwords.words('english')
-	custom_stopwords_list = ['pertamina', 'vivo']
+	custom_stopwords_list = ['pertamina', 'vivo', 'aaaaaaaaa', 'aaaaaaaaaah', 'aaaahhh', 'aaahhh', 'aah', 'aatu']
 
 	list_stopwords = indonesian_stopwords_list + english_stopwords_list + custom_stopwords_list
 	print(f"Indonesian stopwords: {len(indonesian_stopwords_list)}")
