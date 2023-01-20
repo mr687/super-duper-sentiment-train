@@ -68,16 +68,19 @@ with st.expander('Manual Input'):
 
 with st.expander('Upload File (CSV)'):
 	file = st.file_uploader('Upload File', type=['csv'])
-	if file is not None:
-		df = pd.read_csv(file, delimiter='`')
+	delim = st.text_input('Delimiter', value=',', max_chars=1)
+	column = st.text_input('Column Name', value='text')
+	if st.button('Analyze', key='upload'):
+		df = pd.read_csv(file, delimiter=delim)
+		data_count = len(df)
 
 		with st.spinner('Wait for it...'):
 			progress_bar = st.progress(0)
-			df['text_clean'] = df['text'].swifter.apply(preprocess_text)
-			progress_bar.progress(50)
+			df['text_clean'] = df[column].swifter.apply(preprocess_text)
+			progress_bar.progress(data_count * 0.5)
 			df['sentiment'] = df['text_clean'].swifter.apply(get_prediction)
 			progress_bar.progress(100)
-			st.write(df[['text', 'sentiment']])
+			st.write(df[[column, 'sentiment']])
 		
 		st.balloons()
 
