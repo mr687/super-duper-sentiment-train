@@ -1,6 +1,7 @@
 import nltk
 import pandas as pd
 import re
+import string
 
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
@@ -10,21 +11,24 @@ def case_folding(text):
 def clean_tweet(tweet):
 	# Remove @mentions
 	tweet = re.sub(r'@\S+', ' ', tweet)
+	# Remove hashtags
+	tweet = re.sub(r'#\S+', ' ', tweet)
 	# Remove URLs
 	tweet = re.sub(r'https?://[A-Za-z0-9./]+', ' ', tweet)
 	# Remove RT
 	tweet = re.sub(r'RT : ', ' ', tweet)
-	# Remove punctuation
-	tweet = re.sub(r'[^\w\s]', ' ', tweet)
 	# Remove numbers
 	tweet = re.sub(r'[0-9]', ' ', tweet)
+	# Remove non-ASCII characters
+	tweet = tweet.encode('ascii', 'ignore').decode('ascii')
+	# Remove punctuation
+	# tweet = re.sub(r'[^\w\s]', ' ', tweet)
+	tweet = tweet.translate(str.maketrans('', '', string.punctuation))
 	# Remove whitespace
 	tweet = re.sub(r'\s+', ' ', tweet)
 	# Remove leading and trailing whitespace
 	tweet = tweet.strip()
-	# Remove non-ASCII characters
-	tweet = tweet.encode('ascii', 'ignore').decode('ascii')
-	# Keep tweet with more than 2 characters
+	# Keep tweet with more than 1 characters
 	tweet = ' '.join([w for w in tweet.split() if len(w) > 2])
 	return tweet
 
@@ -45,7 +49,8 @@ def normalize(tokens, targets, replacements):
 def load_stopwords_list():
 	indonesian_stopwords_list = nltk.corpus.stopwords.words('indonesian')
 	english_stopwords_list = nltk.corpus.stopwords.words('english')
-	custom_stopwords_list = ['pertamina', 'vivo', 'aaaaaaaaa', 'aaaaaaaaaah', 'aaaahhh', 'aaahhh', 'aah', 'aatu']
+	custom_stopwords_list = ['aaaaaaaaa', 'aaaaaaaaaah', 'aaaahhh', 'aaahhh', 'aah', 'aatu',
+													'wkwkwk', 'slebew', 'sih', 'nih', 'deh', 'nya', 'mah', 'breaking', 'news']
 
 	list_stopwords = indonesian_stopwords_list + english_stopwords_list + custom_stopwords_list
 	print(f"Indonesian stopwords: {len(indonesian_stopwords_list)}")
