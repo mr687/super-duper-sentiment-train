@@ -45,19 +45,6 @@ def write_result(st, text_ori, text_clean, result):
 st.title("Sentiment Analysis of Tweets about Indonesia's Fuel Price Hike")
 st.write("This is a simple sentiment analysis of tweets about Indonesia's fuel price hike developed by [Davi Nomoeh Dani](https://mr687.github.io). The model is trained using a SVM classifier.")
 
-with st.expander('Example Tweets', expanded=True):
-	samples = [
-		"pertamina naikin harga bensin lagi, kapan ya harga bensin naik lagi?",
-		"@pertamina emang gak ada yg bisa diandalkan, kalo gak ada yg bisa diandalkan, kenapa kita harus bayar pajak? #HargaPertaminaMakinMahal",
-	]
-	for i, sample in enumerate(samples):
-		text = preprocess_text(sample)
-		result = get_prediction(text)
-		write_result(st, sample, text, result)
-		if i < len(samples) - 1:
-			st.write('---')
-
-
 with st.expander('Manual Input'):
 	tweet_text = st.text_area('Tweet Text')
 	if st.button('Analyze'):
