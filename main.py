@@ -5,6 +5,9 @@ import numpy as np
 import sklearn as sk
 import nltk
 import swifter
+import matplotlib.pyplot as plt
+
+from wordcloud import WordCloud
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -67,6 +70,33 @@ def write_result(st, text_ori, text_clean, result):
 	else:
 		success_response(st, f"Sentiment: `{sentiment}`")
 
+def create_pie_chart(st, df):
+	sizes = df['sentiment'].value_counts()
+	labels = 'Negative', 'Positive'
+	colors = ['#F14343','#2DD899']
+	fig, ax = plt.subplots()
+	ax.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%',
+        startangle=90)
+	ax.axis('equal')
+	plt.title("Sentiment Distribution")
+	st.pyplot(fig)
+
+def create_wordcloud(st, df):
+	wordcloud = WordCloud(background_color="black", max_words=2000)
+	wordcloud.generate(' '.join(df[df['sentiment'] == 'Positive']['review']))
+	plt.figure(figsize=(10,8))
+	plt.imshow(wordcloud, interpolation='bilinear')
+	plt.axis("off")
+	plt.title("Positive Sentiment Wordcloud")
+	st.pyplot(plt)
+	wordcloud = WordCloud(background_color="black", max_words=2000)
+	wordcloud.generate(' '.join(df[df['sentiment'] == 'Negative']['review']))
+	plt.figure(figsize=(10,8))
+	plt.imshow(wordcloud, interpolation='bilinear')
+	plt.axis("off")
+	plt.title("Negative Sentiment Wordcloud")
+	st.pyplot(plt)
+
 st.title("Sentiment Analysis of Tweets about Indonesia's Fuel Price Hike")
 st.write("This is a simple sentiment analysis of tweets about Indonesia's fuel price hike developed by [Davi Nomoeh Dani](https://mr687.github.io). The model is trained using a SVM classifier and Lexicon-based approach.")
 st.write("---")
@@ -111,9 +141,17 @@ def handle_uploaded_file(st, file=None, delim=',', column='text'):
 		progress_bar.progress(95)
 		df['sentiment'] = df['subjectivity'].swifter.apply(determine_sentiment)
 		progress_bar.progress(100)
-
-	df = df[[column, 'sentiment']]
-	st.write(df)
+	st.write(df[[column, 'sentiment']])
+	st.write("---")
+	info_response(st, f"""
+		Summary
+		- Total Rows: `{len(df)}`
+		- Word Count: `{df['tokens'].swifter.apply(lambda x: len(x)).sum()}`
+		- Negative Sentiment: `{len(df[df['sentiment'] == 'Negative'])}`
+		- Positive Sentiment: `{len(df[df['sentiment'] == 'Positive'])}`
+		""")
+	create_pie_chart(st, df)
+	create_wordcloud(st, df)
 
 with st.expander('Manual Input'):
 	tweet_text = st.text_area('Input Text')
