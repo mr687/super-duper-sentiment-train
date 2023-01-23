@@ -31,37 +31,38 @@ def get_prediction(tweet_text):
 	probabilities = model.predict_proba(tweet_vector)
 	return subjectivity, probabilities
 
-def write_result_sentiment(st, result):
+def write_result(st, text_ori, text_clean, result):
 	subjectivity, probabilities = result
 	negative_proba = probabilities[0][0]
 	positive_proba = probabilities[0][1]
 	sentiment = 'Negative' if subjectivity[0] == 0 else 'Positive'
 	
 	st.info(f"""
+	Text Preprocessing
+	- Original Text: `{text_ori}`
+	- Preprocessed Text: `{text_clean}`
+	""")
+	
+	st.info(f"""
 	Polarity score
 	- Negative score: `{negative_proba}` ({float_to_percent(negative_proba)})
 	- Positive score: `{positive_proba}` ({float_to_percent(positive_proba)})
 	""")
+
 	if sentiment == 'Negative':
 		st.error(f"Sentiment: `{sentiment}`")
 	else:
 		st.success(f"Sentiment: `{sentiment}`")
 
-def write_result(st, text_ori, text_clean, result):
-	st.write(f"Tweet Original: `{text_ori}`")
-	# st.write(f"Preprocessed Tweet: `{text_clean}`")
-	write_result_sentiment(st, result)
-
 st.title("Sentiment Analysis of Tweets about Indonesia's Fuel Price Hike")
 st.write("This is a simple sentiment analysis of tweets about Indonesia's fuel price hike developed by [Davi Nomoeh Dani](https://mr687.github.io). The model is trained using a SVM classifier.")
 
 with st.expander('Manual Input'):
-	tweet_text = st.text_area('Tweet Text')
+	tweet_text = st.text_area('Input Text')
 	if st.button('Analyze'):
 		text = preprocess_text(tweet_text)
 		result = get_prediction(text)
 		write_result(st, tweet_text, text, result)
-		st.balloons()
 
 # with st.expander('Upload File (CSV)'):
 # 	file = st.file_uploader('Upload File', type=['csv'])

@@ -2,11 +2,22 @@ import nltk
 import pandas as pd
 import re
 import string
+import numpy as np
 
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 def case_folding(text):
 	return text.lower()
+
+def remove_repetitive_char(tokens):
+	execption = ['taat', 'saat']
+	result = []
+	for token in tokens:
+		if token in execption:
+			result.append(token)
+		else:
+			result.append(re.sub(r'(.)\1{1,}', r'\1', token))
+	return result
 
 def clean_tweet(tweet):
 	# Remove @mentions
@@ -44,13 +55,29 @@ def load_normalization_list():
 	return list_normalize_targets, list_normalize_replacements
 
 def normalize(tokens, targets, replacements):
-	return [replacements[targets.index(token)] if token in targets else token for token in tokens]
+	return tokens
+	if len(targets) != len(replacements):
+		raise ValueError('Targets and replacements must have the same length')
+	result = []
+	for token in tokens:
+		if token in targets:
+			replacement = replacements[targets.index(token)]
+			if replacement != '' and replacement is not None and replacement != ' ' and replacement is not np.nan and replacement != 'nan' and replacement != 'NaN' and replacement != 'NAN':
+				result.append(replacement)
+		else:
+			result.append(token)
+	return result
 
 def load_stopwords_list():
 	indonesian_stopwords_list = nltk.corpus.stopwords.words('indonesian')
 	english_stopwords_list = nltk.corpus.stopwords.words('english')
-	custom_stopwords_list = ['aaaaaaaaa', 'aaaaaaaaaah', 'aaaahhh', 'aaahhh', 'aah', 'aatu',
-													'wkwkwk', 'slebew', 'sih', 'nih', 'deh', 'nya', 'mah', 'breaking', 'news']
+	custom_stopwords_list = ['aaaaaaaaa', 'aaaaaaaaaah', 'aaaahhh', 'aaahhh', 'aah', 'aatu', 'ngaoahahahhahahaha',
+													'wkwkwk', 'slebew', 'sih', 'nih', 'deh', 'nya', 'mah', 'breaking', 'news', 'wkwkw']
+
+	lexicon_all = pd.read_csv('./dataset/wordlist/lexicon_dict_all.csv', delimiter=',')
+	lexicon_all = list(lexicon_all['word'])
+
+	indonesian_stopwords_list = [word for word in indonesian_stopwords_list if word not in lexicon_all]
 
 	list_stopwords = indonesian_stopwords_list + english_stopwords_list + custom_stopwords_list
 	print(f"Indonesian stopwords: {len(indonesian_stopwords_list)}")
@@ -70,9 +97,8 @@ def build_stemmer():
 	stemmer = stem_factory.create_stemmer()
 	return stemmer
 
+stemmer = build_stemmer()
 def stemming(tokens_bag):
-	stemmer = build_stemmer()
-
 	terms_dict = {}
 	for tokens in tokens_bag:
 		for token in tokens:
@@ -86,6 +112,9 @@ def stemming(tokens_bag):
 		if i % 1000 == 0:
 			print(f"On processing... {i} terms have been stemmed")
 	return terms_dict
+
+def stemming_text(text):
+	return stemmer.stem(text)
 
 def preprocess_text(text):
 	stemmer = build_stemmer()
