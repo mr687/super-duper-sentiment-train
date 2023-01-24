@@ -82,23 +82,27 @@ def create_pie_chart(st, df):
 	st.pyplot(fig)
 
 def create_wordcloud(st, df):
-	wordcloud = WordCloud(background_color="black", max_words=2000)
+	wordcloud = WordCloud(background_color="white", max_words=10)
 	wordcloud.generate(' '.join(df[df['sentiment'] == 'Positive']['review']))
 	plt.figure(figsize=(10,8))
 	plt.imshow(wordcloud, interpolation='bilinear')
 	plt.axis("off")
-	plt.title("Positive Sentiment Wordcloud")
+	plt.title("10 Positive Sentiment Wordcloud")
 	st.pyplot(plt)
-	wordcloud = WordCloud(background_color="black", max_words=2000)
+	st.write("---")
+	wordcloud = WordCloud(background_color="white", max_words=10)
 	wordcloud.generate(' '.join(df[df['sentiment'] == 'Negative']['review']))
 	plt.figure(figsize=(10,8))
 	plt.imshow(wordcloud, interpolation='bilinear')
 	plt.axis("off")
-	plt.title("Negative Sentiment Wordcloud")
+	plt.title("10 Negative Sentiment Wordcloud")
 	st.pyplot(plt)
 
-st.title("Sentiment Analysis of Tweets about Indonesia's Fuel Price Hike")
-st.write("This is a simple sentiment analysis of tweets about Indonesia's fuel price hike developed by [Davi Nomoeh Dani](https://mr687.github.io). The model is trained using a SVM classifier and Lexicon-based approach.")
+def proba_to_percent(proba):
+	return f"{proba*100:.1f}%"
+
+st.subheader("Sentiment Analysis of Tweets about Indonesia's Fuel Price Hike 📊📈🪄")
+st.info("This is a simple sentiment analysis of tweets about Indonesia's fuel price hike developed by [Davi Nomoeh Dani](https://mr687.github.io). The model is trained using a SVM classifier and Lexicon-based approach.")
 st.write("---")
 
 def handle_uploaded_file(st, file=None, delim=',', column='text'):
@@ -138,10 +142,20 @@ def handle_uploaded_file(st, file=None, delim=',', column='text'):
 		progress_bar.progress(70)
 	with st.spinner('Predicting data...'):
 		df['subjectivity'], df['probabilities'] = zip(*df['review'].swifter.apply(get_prediction))
-		progress_bar.progress(95)
+		progress_bar.progress(85)
+	with st.spinner('Determining sentiment...'):
 		df['sentiment'] = df['subjectivity'].swifter.apply(determine_sentiment)
+		df['negative_proba'] = df['probabilities'].swifter.apply(lambda x: proba_to_percent(x[0][0]))
+		df['positive_proba'] = df['probabilities'].swifter.apply(lambda x: proba_to_percent(x[0][1]))
 		progress_bar.progress(100)
-	st.write(df[[column, 'sentiment']])
+	df[f'{column}_clean'] = df['review']
+	st.write(df[[column, f'{column}_clean', 'negative_proba', 'positive_proba', 'sentiment']])
+	st.download_button(
+		label='Download Result 🎁',
+		data=df[[column, f'{column}_clean', 'negative_proba', 'positive_proba', 'sentiment']].to_csv(index=False),
+		file_name='sental-result.csv',
+		mime='text/csv',
+	)
 	st.write("---")
 	info_response(st, f"""
 		Summary
@@ -151,11 +165,12 @@ def handle_uploaded_file(st, file=None, delim=',', column='text'):
 		- Positive Sentiment: `{len(df[df['sentiment'] == 'Positive'])}`
 		""")
 	create_pie_chart(st, df)
+	st.write("---")
 	create_wordcloud(st, df)
 
 with st.expander('Manual Input'):
 	tweet_text = st.text_area('Input Text')
-	if st.button('Analyze'):
+	if st.button('Analyze 🪄'):
 		text = preprocessing(tweet_text)
 		result = get_prediction(text)
 		write_result(st, tweet_text, text, result)
@@ -164,5 +179,5 @@ with st.expander('Upload File (CSV)'):
 	file = st.file_uploader('Upload File', type=['csv'])
 	delim = st.text_input('Delimiter', value=',', max_chars=1)
 	column = st.text_input('Column Name', value='text')
-	if st.button('Analyze', key='upload'):
+	if st.button('Analyze 🪄', key='upload'):
 		handle_uploaded_file(st, file, delim, column)
