@@ -14,6 +14,9 @@ root_path = os.path.dirname(os.path.abspath(__file__))
 def get_filepath(filename):
 	return os.path.join(root_path, filename)
 
+lexicon_all = pd.read_csv(get_filepath('dataset/wordlist/lexicon_dict_all.csv'), delimiter=',')
+lexicon_all = list(lexicon_all['word'])
+
 def case_folding(text):
 	return text.lower()
 
@@ -90,16 +93,14 @@ def normalize(tokens, targets, replacements):
 			result.append(token)
 	return result
 
-def load_stopwords_list():
+def load_stopwords_list(exclude_lexicon=True):
 	indonesian_stopwords_list = nltk.corpus.stopwords.words('indonesian')
 	english_stopwords_list = nltk.corpus.stopwords.words('english')
 	custom_stopwords_list = ['aaaaaaaaa', 'aaaaaaaaaah', 'aaaahhh', 'aaahhh', 'aah', 'aatu', 'ngaoahahahhahahaha',
 													'wkwkwk', 'slebew', 'sih', 'nih', 'deh', 'nya', 'mah', 'breaking', 'news', 'wkwkw']
 
-	lexicon_all = pd.read_csv(get_filepath('dataset/wordlist/lexicon_dict_all.csv'), delimiter=',')
-	lexicon_all = list(lexicon_all['word'])
-
-	indonesian_stopwords_list = [word for word in indonesian_stopwords_list if word not in lexicon_all]
+	if exclude_lexicon:
+		indonesian_stopwords_list = [word for word in indonesian_stopwords_list if word not in lexicon_all]
 
 	list_stopwords = indonesian_stopwords_list + english_stopwords_list + custom_stopwords_list
 	print(f"Indonesian stopwords: {len(indonesian_stopwords_list)}")
@@ -125,7 +126,7 @@ def do_stemming(tokens):
 def prepare_stemming(tokens):
 	for token in tokens:
 		if token not in terms_dict:
-			terms_dict[token] = stemming_text(text=token)
+			terms_dict[token] = stemming_text(text=token) if token not in lexicon_all else token
 	return tokens
 def stemming(df, column='tokens'):
 	print('Stemming...')
