@@ -168,7 +168,7 @@ def handle_uploaded_file(st, file=None, delim=',', column='text'):
 	st.write("---")
 	create_wordcloud(st, df)
 
-with st.expander('Upload File (CSV)'):
+with st.expander('Upload File (CSV)', expanded=True):
 	file = st.file_uploader('Upload File', type=['csv'])
 	delim = st.text_input('Delimiter', value=',', max_chars=1)
 	column = st.text_input('Column Name', value='text')
